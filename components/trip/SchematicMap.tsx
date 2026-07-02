@@ -35,45 +35,37 @@ interface SchematicMapProps {
   focusedPlaceKey?: string | null;
 }
 
-// One pin on the map, after deduplication and projection.
-interface Pin {
+// One unique place a day visits, before it is positioned on the canvas.
+// The map tab's list ALSO uses this, so list numbers always match pins.
+export interface MapPlace {
   number: number;
   name: string;
   placeKey: string;
   lat: number;
   lng: number;
+}
+
+// One pin on the map: a unique place plus its final canvas position.
+interface Pin extends MapPlace {
   x: number;
   y: number;
 }
 
-// Opens Google Maps walking directions in a new tab. On a phone this
-// hands over to the Google Maps app if it is installed.
-function openWalkingDirections(lat: number, lng: number) {
-  window.open(
-    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`,
-    "_blank",
-    "noopener,noreferrer"
-  );
-}
+/*
+  Works out which unique places a day's stops visit.
 
-export default function SchematicMap({
-  stops,
-  hotel,
-  river,
-  focusedPlaceKey,
-}: SchematicMapProps) {
-  /*
-    -------------------------------------------------------------------------
-    STEP 1 — collect the unique places to pin.
-    -------------------------------------------------------------------------
-    Some stops have no location (e.g. "flight lands"), and some places are
-    visited twice in a day (e.g. the basilica and then its dome climb).
-    We keep one pin per unique place, numbered in the order it is first
-    visited. Stops AT the hotel are skipped, because the hotel already has
-    its own dedicated "H" pin.
-  */
+  Some stops have no location (e.g. "flight lands"), and some places are
+  visited twice in a day (e.g. the basilica and then its dome climb).
+  We keep one entry per unique place, numbered in the order it is first
+  visited. Stops AT the hotel are skipped, because the hotel always has
+  its own dedicated "H" pin.
+*/
+export function uniqueMapPlaces(
+  stops: Stop[],
+  hotel: { lat: number; lng: number }
+): MapPlace[] {
   const seen = new Set<string>();
-  const uniquePlaces: Omit<Pin, "x" | "y" | "number">[] = [];
+  const places: MapPlace[] = [];
 
   for (const stop of [...stops].sort((a, b) => a.sort_order - b.sort_order)) {
     if (stop.lat === null || stop.lng === null) continue;
@@ -90,13 +82,40 @@ export default function SchematicMap({
     if (seen.has(key)) continue;
     seen.add(key);
 
-    uniquePlaces.push({
+    places.push({
+      number: places.length + 1,
       name: stop.name,
       placeKey: key,
       lat: stop.lat,
       lng: stop.lng,
     });
   }
+
+  return places;
+}
+
+// Opens Google Maps walking directions in a new tab. On a phone this
+// hands over to the Google Maps app if it is installed.
+export function openWalkingDirections(lat: number, lng: number) {
+  window.open(
+    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`,
+    "_blank",
+    "noopener,noreferrer"
+  );
+}
+
+export default function SchematicMap({
+  stops,
+  hotel,
+  river,
+  focusedPlaceKey,
+}: SchematicMapProps) {
+  /*
+    -------------------------------------------------------------------------
+    STEP 1 — collect the unique places to pin (shared helper above).
+    -------------------------------------------------------------------------
+  */
+  const uniquePlaces = uniqueMapPlaces(stops, hotel);
 
   /*
     -------------------------------------------------------------------------
@@ -142,7 +161,6 @@ export default function SchematicMap({
 
   const pins: Pin[] = uniquePlaces.map((place, i) => ({
     ...place,
-    number: i + 1,
     ...toSvg(projected[i]),
   }));
 

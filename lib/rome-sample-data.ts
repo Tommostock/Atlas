@@ -622,6 +622,27 @@ export const romePackingList: PackingItem[] = [
 
 /*
   ---------------------------------------------------------------------------
+  THE RIVER TIBER
+  ---------------------------------------------------------------------------
+  Real coordinates tracing the Tiber's S-shaped path through central Rome,
+  north to south. The schematic map projects these with the same formula
+  as the pins, so the river appears in its true position — with the
+  Vatican on one bank and the old centre on the other, just like reality.
+*/
+export const romeRiver = [
+  { lat: 41.9195, lng: 12.4674 },
+  { lat: 41.9125, lng: 12.4691 },
+  { lat: 41.9066, lng: 12.4676 },
+  { lat: 41.9027, lng: 12.4652 },
+  { lat: 41.8975, lng: 12.4665 },
+  { lat: 41.8925, lng: 12.4702 },
+  { lat: 41.889, lng: 12.4745 },
+  { lat: 41.8853, lng: 12.4769 },
+  { lat: 41.8805, lng: 12.4757 },
+];
+
+/*
+  ---------------------------------------------------------------------------
   STATIC INFO TAB TEXT (Phase 1 only — editable per trip in Phase 2)
   ---------------------------------------------------------------------------
 */
