@@ -15,9 +15,15 @@ interface TimelineProps {
   stops: Stop[];
   /** Passed through to each StopCard so tapping a stop can jump to the map. */
   onStopTap?: (stop: Stop) => void;
+  /** Passed through to each StopCard's edit pencil. */
+  onStopEdit?: (stop: Stop) => void;
 }
 
-export default function Timeline({ stops, onStopTap }: TimelineProps) {
+export default function Timeline({
+  stops,
+  onStopTap,
+  onStopEdit,
+}: TimelineProps) {
   // Always display stops in their intended order, first to last.
   const ordered = [...stops].sort((a, b) => a.sort_order - b.sort_order);
 
@@ -46,7 +52,7 @@ export default function Timeline({ stops, onStopTap }: TimelineProps) {
 
           {/* Column 3 — the stop card itself. */}
           <div className="min-w-0 flex-1">
-            <StopCard stop={stop} onTap={onStopTap} />
+            <StopCard stop={stop} onTap={onStopTap} onEdit={onStopEdit} />
           </div>
         </div>
       ))}

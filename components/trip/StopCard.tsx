@@ -8,7 +8,7 @@
 // buttons. Tapping the card itself jumps to the map tab focused on this
 // stop's location.
 
-import { Euro, Clock, Ticket, Navigation } from "lucide-react";
+import { Euro, Clock, Ticket, Navigation, Pencil } from "lucide-react";
 import type { Stop, StopCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -33,9 +33,11 @@ interface StopCardProps {
   /** Called when the user taps the card body (not the buttons). The trip
       page uses this to jump to the map tab focused on this stop. */
   onTap?: (stop: Stop) => void;
+  /** Called when the user taps the pencil — opens the edit form. */
+  onEdit?: (stop: Stop) => void;
 }
 
-export default function StopCard({ stop, onTap }: StopCardProps) {
+export default function StopCard({ stop, onTap, onEdit }: StopCardProps) {
   const meta = CATEGORY_META[stop.category];
 
   // The card only reacts to taps if the stop has a mappable location.
@@ -62,18 +64,35 @@ export default function StopCard({ stop, onTap }: StopCardProps) {
         )}
       />
 
-      {/* Top row: the stop name on the left, category badge on the right. */}
-      <div className="flex items-start justify-between gap-3">
+      {/* Top row: the stop name on the left; edit pencil and category
+          badge on the right. */}
+      <div className="flex items-start justify-between gap-2">
         <h3 className="font-display text-[15px] leading-snug font-semibold text-ink">
           {stop.name}
         </h3>
-        <span
-          className={cn(
-            "shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-semibold tracking-wide uppercase",
-            meta.badgeClasses
+        <span className="flex shrink-0 items-center gap-1.5">
+          {onEdit && (
+            <button
+              type="button"
+              aria-label={`Edit ${stop.name}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(stop);
+              }}
+              // Small icon, but padded out to a comfortable tap size.
+              className="-my-1.5 flex h-9 w-9 items-center justify-center rounded-full text-ink-faint active:bg-surface-2 active:text-ink"
+            >
+              <Pencil size={13} aria-hidden />
+            </button>
           )}
-        >
-          {meta.label}
+          <span
+            className={cn(
+              "rounded-full px-2.5 py-1 text-[10.5px] font-semibold tracking-wide uppercase",
+              meta.badgeClasses
+            )}
+          >
+            {meta.label}
+          </span>
         </span>
       </div>
 

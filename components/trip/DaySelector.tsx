@@ -5,6 +5,7 @@
 // has more days than fit on screen, with the scrollbar hidden so it
 // feels like a native app control.
 
+import { Plus } from "lucide-react";
 import type { Day } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,8 @@ interface DaySelectorProps {
   activeDayIndex: number;
   /** Called with the new index when the user taps a different day. */
   onSelect: (index: number) => void;
+  /** When provided, a "+" pill appears at the end for adding a day. */
+  onAddDay?: () => void;
 }
 
 // Turns "2026-08-14" into "Fri". The "T12:00:00" suffix pins the date to
@@ -33,6 +36,7 @@ export default function DaySelector({
   days,
   activeDayIndex,
   onSelect,
+  onAddDay,
 }: DaySelectorProps) {
   return (
     <div className="no-scrollbar flex gap-2 overflow-x-auto">
@@ -66,6 +70,19 @@ export default function DaySelector({
           </button>
         );
       })}
+
+      {/* The "add a day" pill at the end of the row. */}
+      {onAddDay && (
+        <button
+          type="button"
+          onClick={onAddDay}
+          aria-label="Add a day"
+          className="flex min-w-[52px] shrink-0 flex-col items-center justify-center rounded-2xl border border-dashed border-border px-3 py-2 text-ink-faint active:border-accent active:text-accent"
+        >
+          <Plus size={18} aria-hidden />
+          <span className="text-[10px] font-semibold uppercase">Day</span>
+        </button>
+      )}
     </div>
   );
 }
