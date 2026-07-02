@@ -14,3 +14,30 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+/*
+  ---------------------------------------------------------------------------
+  Web Mercator projection
+  ---------------------------------------------------------------------------
+  Latitude and longitude describe positions on a round globe, but our map
+  is a flat rectangle. "Web Mercator" is the same flattening formula that
+  Google Maps uses, so places keep their correct positions RELATIVE to each
+  other — if the Colosseum is south-east of the Pantheon in real life, it
+  will be south-east on our map too.
+
+  The numbers that come out are in metres on the flattened map. We don't
+  care about the units — the SchematicMap component only uses the values
+  to work out where each pin sits relative to the others.
+*/
+export function toMercator(lat: number, lng: number) {
+  // Longitude (east/west) converts with simple proportion.
+  const x = (lng * 20037508.34) / 180
+
+  // Latitude (north/south) needs the Mercator stretch formula, because
+  // the globe gets "stretched" more the further you are from the equator.
+  const y =
+    (Math.log(Math.tan(((90 + lat) * Math.PI) / 360)) / (Math.PI / 180)) *
+    (20037508.34 / 180)
+
+  return { x, y }
+}
