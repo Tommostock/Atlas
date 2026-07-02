@@ -17,6 +17,19 @@ export function cn(...inputs: ClassValue[]) {
 
 /*
   ---------------------------------------------------------------------------
+  Money formatting
+  ---------------------------------------------------------------------------
+  Turns a number like 186.5 into a friendly string like "€186.50".
+  Whole numbers stay clean ("€45" rather than "€45.00"), while anything
+  with pennies always shows exactly two decimal places.
+*/
+export function formatMoney(amount: number, symbol: string): string {
+  const isWholeNumber = Number.isInteger(amount)
+  return `${symbol}${amount.toFixed(isWholeNumber ? 0 : 2)}`
+}
+
+/*
+  ---------------------------------------------------------------------------
   Web Mercator projection
   ---------------------------------------------------------------------------
   Latitude and longitude describe positions on a round globe, but our map
