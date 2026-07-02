@@ -46,6 +46,12 @@ export interface Trip {
   budget_total: number | null;
   /** Free-text notes about the trip */
   notes: string;
+  /** Hotel check-in time shown on the Info tab, e.g. "15:00" */
+  hotel_checkin: string;
+  /** "Getting around" notes shown on the Info tab — one tip per line */
+  getting_around: string;
+  /** "Things to know" notes shown on the Info tab — one tip per line */
+  things_to_know: string;
   created_at: string;
 }
 

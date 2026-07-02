@@ -41,6 +41,11 @@ export const romeTrip: Trip = {
   budget_total: 450,
   notes:
     "Check-in from 15:00 — they will store luggage if we arrive earlier. Rooftop terrace bar for a first-evening drink.",
+  hotel_checkin: "15:00",
+  // The Info tab's editable text sections, one tip per line. These are
+  // defined properly at the bottom of this file and joined together here.
+  getting_around: "",
+  things_to_know: "",
   created_at: "2026-07-01T00:00:00Z",
 };
 
@@ -662,3 +667,8 @@ export const romeThingsToKnow = [
   "Pickpockets work the crowded spots: Trevi, buses, and the metro. Front pockets and zipped bags.",
   "August is hot (32°C+). Do the big outdoor sights early, then follow the locals into the shade after lunch.",
 ];
+
+// Fill in the trip's editable Info-tab text from the lists above,
+// one tip per line.
+romeTrip.getting_around = romeGettingAround.join("\n");
+romeTrip.things_to_know = romeThingsToKnow.join("\n");
