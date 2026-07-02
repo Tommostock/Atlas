@@ -294,9 +294,9 @@ export default function SchematicMap({
         </text>
         <text
           x={hotelPos.x}
-          y={hotelPos.y + 32}
+          y={hotelPos.y + 34}
           textAnchor="middle"
-          fontSize="11"
+          fontSize="14"
           fill="#9A9690"
           paintOrder="stroke"
           stroke="#1A1A1A"
@@ -356,7 +356,7 @@ export default function SchematicMap({
               x={labelOnLeft ? pin.x - 20 : pin.x + 20}
               y={pin.y + 4}
               textAnchor={labelOnLeft ? "end" : "start"}
-              fontSize="11"
+              fontSize="14"
               fill={isFocused ? "#F0EDE6" : "#9A9690"}
               fontWeight={isFocused ? 600 : 400}
               paintOrder="stroke"

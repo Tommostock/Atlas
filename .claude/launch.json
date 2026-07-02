@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "atlas-dev",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": [
+        "/c",
+        "set PATH=%PATH%;C:\\Users\\Tom\\AppData\\Local\\Programs\\nodejs&& npm run dev"
+      ],
+      "port": 3000
+    }
+  ]
+}
