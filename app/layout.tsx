@@ -31,12 +31,28 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Atlas",
   description: "Every holiday, planned properly.",
+  // Points to the PWA manifest, which is what lets iPhones and Androids
+  // "Add to Home Screen" with the right name, icon and colours.
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-192.png",
+    // The icon iOS uses on the home screen.
+    apple: "/icon-192.png",
+  },
+  appleWebApp: {
+    // Opens full-screen from the iPhone home screen, no Safari bars.
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Atlas",
+  },
 };
 
 // Settings for how the page behaves on a phone screen.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // The colour the phone tints its status bar to match the app.
+  themeColor: "#C87941",
   // "cover" lets our bottom tab bar extend behind the iPhone home
   // indicator, so we can pad it correctly with safe-area insets.
   viewportFit: "cover",
