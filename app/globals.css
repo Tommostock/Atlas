@@ -1,26 +1,164 @@
+/*
+  globals.css — the single place where Atlas's entire look is defined.
+
+  Atlas uses Tailwind CSS version 4. In this version there is no separate
+  "tailwind.config.ts" file — instead, we define our design tokens (colours,
+  fonts, sizes) right here in CSS, and Tailwind automatically turns them
+  into utility classes we can use everywhere (like "bg-surface" or
+  "text-accent").
+*/
+
 @import "tailwindcss";
 
+/*
+  ---------------------------------------------------------------------------
+  1. THE ATLAS PALETTE
+  ---------------------------------------------------------------------------
+  These are the raw colour values from SPEC.md. Atlas is dark-theme ONLY,
+  so there is exactly one set of values — no light mode alternatives.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0F0F0F; /* near-black page background */
+  --surface: #1A1A1A; /* cards and sheets */
+  --surface-2: #242424; /* hover states, nested cards */
+  --border: #2e2e2e; /* dividers and card borders */
+  --ink: #f0ede6; /* primary text — warm white, not pure white */
+  --ink-soft: #9a9690; /* secondary text */
+  --ink-faint: #5a5754; /* placeholders and disabled text */
+  --accent: #c87941; /* warm amber — the signature colour */
+  --accent-tint: #2a1e12; /* dark amber background tint */
+  --green: #5c8a52; /* "free" category / success */
+  --green-tint: #0f1c0e;
+  --gold: #9a7a3a; /* warnings and alerts */
+  --gold-tint: #1e1a0a;
+  --red: #c04040; /* errors, destructive actions */
+
+  /*
+    The variables below are the names that shadcn/ui components expect.
+    We simply point them at our Atlas palette so every ready-made component
+    (buttons, dialogs, checkboxes...) automatically matches our dark theme.
+  */
+  --radius: 0.625rem;
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent);
+  --primary-foreground: #0f0f0f;
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-soft);
+  --accent-foreground: #0f0f0f;
+  --destructive: var(--red);
+  --input: var(--border);
+  --ring: var(--accent);
 }
 
+/*
+  ---------------------------------------------------------------------------
+  2. TELL TAILWIND ABOUT OUR TOKENS
+  ---------------------------------------------------------------------------
+  Everything inside "@theme inline" becomes a Tailwind utility class.
+  For example "--color-surface" creates "bg-surface", "text-surface",
+  "border-surface" and so on. This is how we can write markup like
+  <div className="bg-surface border-border text-ink"> throughout the app.
+*/
 @theme inline {
+  /* Atlas colour tokens */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-accent: var(--accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-green: var(--green);
+  --color-green-tint: var(--green-tint);
+  --color-gold: var(--gold);
+  --color-gold-tint: var(--gold-tint);
+  --color-red: var(--red);
+
+  /* shadcn/ui colour tokens (mapped onto the Atlas palette above) */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Corner rounding sizes used by shadcn components */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /*
+    Fonts. The actual font files are loaded in app/layout.tsx using
+    next/font, which sets the --font-fraunces and --font-inter variables.
+    Here we just wire them up to Tailwind class names:
+      "font-sans"    → Inter    (all body text and UI labels)
+      "font-display" → Fraunces (trip names, day headings, big numbers)
+  */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/*
+  ---------------------------------------------------------------------------
+  3. BASE STYLES
+  ---------------------------------------------------------------------------
+  Rules that apply to the whole document before any component styles.
+*/
+@layer base {
+  /* Every element uses our border colour by default. */
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    /* Stop iPhones from randomly enlarging text in landscape mode. */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    /* Makes text look crisper on high-resolution phone screens. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/*
+  ---------------------------------------------------------------------------
+  4. SMALL CUSTOM UTILITIES
+  ---------------------------------------------------------------------------
+*/
+
+/*
+  "no-scrollbar" lets an element scroll sideways without showing an ugly
+  scrollbar. Used by the day selector pills.
+*/
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
