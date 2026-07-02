@@ -18,6 +18,12 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Machine-generated service worker files — not our code to lint.
+      "public/sw.js",
+      "public/sw.js.map",
+      "public/workbox-*.js",
+      "public/workbox-*.js.map",
+      "public/fallback-*.js",
     ],
   },
 ];
