@@ -9,6 +9,8 @@
 // that id from Supabase.
 
 import { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import type { Stop } from "@/lib/types";
 import BottomTabBar, { type TabId } from "@/components/trip/BottomTabBar";
 import ItineraryTab from "@/components/tabs/ItineraryTab";
@@ -30,9 +32,11 @@ export default function TripPage() {
   const [activeTab, setActiveTab] = useState<TabId>("itinerary");
   // Which day is selected (0 = the first day).
   const [activeDay, setActiveDay] = useState(0);
-  // Which map pin to highlight — set when a stop is tapped on the
-  // itinerary, cleared when the day changes.
-  const [focusedPlaceKey, setFocusedPlaceKey] = useState<string | null>(null);
+  // Which map pin is selected — set by tapping a pin on the map or a stop
+  // on the itinerary, cleared when the day changes.
+  const [selectedPlaceKey, setSelectedPlaceKey] = useState<string | null>(
+    null
+  );
 
   const day = romeDays[activeDay];
 
@@ -50,16 +54,21 @@ export default function TripPage() {
   // map tab, and scroll back to the top so the map is in view.
   const handleStopTap = (stop: Stop) => {
     if (stop.lat === null || stop.lng === null) return;
-    setFocusedPlaceKey(stop.place_key ?? `${stop.lat},${stop.lng}`);
+    setSelectedPlaceKey(stop.place_key ?? `${stop.lat},${stop.lng}`);
     setActiveTab("map");
     window.scrollTo({ top: 0 });
   };
 
-  // When the day changes, clear any highlighted pin — it belonged to the
+  // Tapping a pin selects it; tapping the SAME pin again deselects it.
+  const handleSelectPlace = (placeKey: string) => {
+    setSelectedPlaceKey((current) => (current === placeKey ? null : placeKey));
+  };
+
+  // When the day changes, clear any selected pin — it belonged to the
   // previous day.
   const handleSelectDay = (index: number) => {
     setActiveDay(index);
-    setFocusedPlaceKey(null);
+    setSelectedPlaceKey(null);
   };
 
   // Helper: show a view only when its tab is active. All four views stay
@@ -79,10 +88,24 @@ export default function TripPage() {
           WebkitBackdropFilter: "blur(10px)",
         }}
       >
-        <h1 className="font-display text-xl leading-tight font-semibold text-ink">
-          {romeTrip.name}
-        </h1>
-        <p className="text-xs text-ink-soft">{romeTrip.destination}</p>
+        <div className="flex items-center gap-2">
+          {/* The back arrow — always returns to the trips list. The -ml-2
+              nudge keeps the arrow visually aligned with the content while
+              the button itself stays a full 44px tap target. */}
+          <Link
+            href="/dashboard"
+            aria-label="Back to trips"
+            className="-ml-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-soft active:bg-surface-2"
+          >
+            <ArrowLeft size={20} aria-hidden />
+          </Link>
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-xl leading-tight font-semibold text-ink">
+              {romeTrip.name}
+            </h1>
+            <p className="text-xs text-ink-soft">{romeTrip.destination}</p>
+          </div>
+        </div>
       </header>
 
       {/* The tab views. Bottom padding leaves room for the tab bar plus
@@ -100,11 +123,14 @@ export default function TripPage() {
 
         <div className={viewClass("map")}>
           <MapTab
-            dayNumber={day.day_number}
+            days={romeDays}
+            activeDayIndex={activeDay}
+            onSelectDay={handleSelectDay}
             stops={dayStops}
             hotel={hotel}
             river={romeRiver}
-            focusedPlaceKey={focusedPlaceKey}
+            selectedPlaceKey={selectedPlaceKey}
+            onSelectPlace={handleSelectPlace}
           />
         </div>
 
