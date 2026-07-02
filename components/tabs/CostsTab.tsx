@@ -9,8 +9,14 @@
 // All stop costs are stored PER PERSON, so the party-size toggle simply
 // multiplies every figure. The trip budget is for the whole party, so it
 // stays fixed while the spend changes.
+//
+// Every amount is also shown in pounds (£) so the local prices are easy
+// to judge at a glance. The exchange rate comes from Frankfurter, a free
+// service that republishes the European Central Bank's daily rates — no
+// key needed, nothing to pay. If the rate can't be fetched (e.g. offline)
+// we quietly fall back to a stored approximate rate.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Ticket } from "lucide-react";
 import type { Trip, Day, Stop, StopCategory } from "@/lib/types";
 import { cn, formatMoney } from "@/lib/utils";
@@ -36,9 +42,46 @@ function sumCosts(stops: Stop[]): number {
   return stops.reduce((total, stop) => total + (stop.cost_amount ?? 0), 0);
 }
 
+// Used until the live rate arrives, and kept if it never does (offline).
+// Roughly right for EUR→GBP; the "≈" in the UI signals it is approximate.
+const FALLBACK_GBP_RATE = 0.85;
+
 export default function CostsTab({ trip, days, stops }: CostsTabProps) {
   // How many people are travelling. Defaults to 2 (a couple).
   const [partySize, setPartySize] = useState(2);
+
+  // The live exchange rate from the trip's currency to pounds.
+  const [gbpRate, setGbpRate] = useState(FALLBACK_GBP_RATE);
+
+  // Fetch today's rate once when the tab first loads. If anything goes
+  // wrong (no internet, service down) we simply keep the fallback rate.
+  useEffect(() => {
+    if (trip.currency === "GBP") return; // already in pounds — nothing to do
+    let cancelled = false;
+    fetch(
+      `https://api.frankfurter.dev/v1/latest?base=${trip.currency}&symbols=GBP`
+    )
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.rates?.GBP) {
+          setGbpRate(data.rates.GBP);
+        }
+      })
+      .catch(() => {
+        /* offline or service down — the fallback rate stays in place */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [trip.currency]);
+
+  // Only show the second currency when the trip is NOT already in pounds.
+  const showPounds = trip.currency !== "GBP";
+
+  // Converts an amount in the trip currency to a friendly pounds string,
+  // rounded to whole pounds because it is an approximation anyway.
+  const inPounds = (amount: number) =>
+    formatMoney(Math.round(amount * gbpRate), "£");
 
   // The headline figure: everything, for everyone.
   const perPersonTotal = sumCosts(stops);
@@ -66,8 +109,16 @@ export default function CostsTab({ trip, days, stops }: CostsTabProps) {
             <p className="mt-1 font-display text-[34px] leading-none font-semibold text-ink tabular-nums">
               {formatMoney(partyTotal, trip.currency_symbol)}
             </p>
+            {/* The same total in pounds, so both currencies are visible. */}
+            {showPounds && (
+              <p className="mt-1.5 text-sm text-ink-soft tabular-nums">
+                ≈ {inPounds(partyTotal)}
+              </p>
+            )}
             <p className="mt-1.5 text-xs text-ink-faint tabular-nums">
-              {formatMoney(perPersonTotal, trip.currency_symbol)} per person
+              {/* "pp" = per person, matching the labels on stop cards. */}
+              {formatMoney(perPersonTotal, trip.currency_symbol)} pp
+              {showPounds && <> · ≈ {inPounds(perPersonTotal)}</>}
             </p>
           </div>
 
@@ -80,7 +131,7 @@ export default function CostsTab({ trip, days, stops }: CostsTabProps) {
                 onClick={() => setPartySize(size)}
                 aria-pressed={partySize === size}
                 className={cn(
-                  "h-9 rounded-full px-3.5 text-xs font-semibold transition-colors",
+                  "h-9 rounded-full px-3.5 text-xs font-semibold whitespace-nowrap transition-colors",
                   partySize === size
                     ? "bg-ink text-bg"
                     : "text-ink-soft"
@@ -137,8 +188,16 @@ export default function CostsTab({ trip, days, stops }: CostsTabProps) {
                 <span className="text-[13px] text-ink-soft">
                   Day {day.day_number} · {day.label}
                 </span>
-                <span className="text-[13px] font-medium text-ink tabular-nums">
-                  {formatMoney(dayTotal, trip.currency_symbol)}
+                {/* Both currencies, stacked: euros on top, pounds below. */}
+                <span className="text-right">
+                  <span className="block text-[13px] font-medium text-ink tabular-nums">
+                    {formatMoney(dayTotal, trip.currency_symbol)}
+                  </span>
+                  {showPounds && (
+                    <span className="block text-[11px] text-ink-faint tabular-nums">
+                      ≈ {inPounds(dayTotal)}
+                    </span>
+                  )}
                 </span>
               </div>
             );
@@ -170,8 +229,16 @@ export default function CostsTab({ trip, days, stops }: CostsTabProps) {
                     ({categoryStops.length})
                   </span>
                 </span>
-                <span className="text-[13px] font-medium text-ink tabular-nums">
-                  {formatMoney(categoryTotal, trip.currency_symbol)}
+                {/* Both currencies, stacked: euros on top, pounds below. */}
+                <span className="text-right">
+                  <span className="block text-[13px] font-medium text-ink tabular-nums">
+                    {formatMoney(categoryTotal, trip.currency_symbol)}
+                  </span>
+                  {showPounds && (
+                    <span className="block text-[11px] text-ink-faint tabular-nums">
+                      ≈ {inPounds(categoryTotal)}
+                    </span>
+                  )}
                 </span>
               </div>
             );
