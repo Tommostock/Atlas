@@ -1,25 +1,36 @@
 "use client";
 
-// MapTab — the day's stops drawn on the schematic map.
+// MapTab — the day's stops on a real, interactive map.
 //
-// How it works now:
-//   - Day pills at the top switch the map between days (same pills as the
-//     itinerary — the two tabs always show the same day).
+//   - Day pills at the top switch the map between days.
+//   - The map pans, pinch-zooms and rotates like Google Maps (two-finger
+//     gestures, so one finger still scrolls the page).
 //   - Tapping a pin (or a row in the list) SELECTS that stop: its pin
-//     lights up and a small card appears with the stop's details and a
+//     lights up and a card appears with the stop's details and a
 //     "Walking directions" button.
 //   - The little arrow button on each list row is a shortcut straight to
 //     Google Maps directions.
 
+import dynamic from "next/dynamic";
 import { Navigation, Clock } from "lucide-react";
 import type { Day, Stop } from "@/lib/types";
 import DaySelector from "@/components/trip/DaySelector";
-import SchematicMap, {
+import {
   uniqueMapPlaces,
   openWalkingDirections,
   HOTEL_KEY,
-} from "@/components/trip/SchematicMap";
+} from "@/lib/map";
 import { cn } from "@/lib/utils";
+
+// The map engine only works in the browser (it draws with WebGL), so we
+// load it "dynamically" — meaning: skipped on the server, fetched in the
+// browser — with a grey placeholder while it arrives.
+const RealMap = dynamic(() => import("@/components/trip/RealMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[420px] w-full animate-pulse rounded-2xl border border-border bg-surface" />
+  ),
+});
 
 interface MapTabProps {
   days: Day[];
@@ -28,8 +39,6 @@ interface MapTabProps {
   /** The stops for the active day. */
   stops: Stop[];
   hotel: { name: string; lat: number; lng: number };
-  /** Optional river waypoints for the destination (Rome has the Tiber). */
-  river?: { lat: number; lng: number }[];
   /** The currently selected place (highlighted pin), or null. */
   selectedPlaceKey: string | null;
   /** Called when the user taps a pin or list row. */
@@ -42,12 +51,11 @@ export default function MapTab({
   onSelectDay,
   stops,
   hotel,
-  river,
   selectedPlaceKey,
   onSelectPlace,
 }: MapTabProps) {
-  // The same deduplication the map itself uses, so the list numbers below
-  // are guaranteed to match the pin numbers above.
+  // The unique places for this day — pins and list share this, so their
+  // numbering always matches.
   const places = uniqueMapPlaces(stops, hotel);
 
   // The stop belonging to the selected pin (first visit wins when a place
@@ -72,14 +80,13 @@ export default function MapTab({
 
       {/* Intro line above the map. */}
       <p className="mt-4 mb-3 text-[13px] text-ink-soft">
-        Day {days[activeDayIndex].day_number} — tap a pin to see the stop
+        Day {days[activeDayIndex]?.day_number} — tap a pin to see the stop
       </p>
 
-      {/* The schematic map itself. */}
-      <SchematicMap
-        stops={stops}
+      {/* The interactive map. */}
+      <RealMap
         hotel={hotel}
-        river={river}
+        places={places}
         selectedPlaceKey={selectedPlaceKey}
         onSelectPlace={onSelectPlace}
       />
@@ -186,15 +193,16 @@ export default function MapTab({
         {/* Friendly empty state if the day has no mappable stops. */}
         {places.length === 0 && (
           <p className="px-4 py-6 text-center text-[13px] text-ink-faint">
-            No mapped stops for this day.
+            No mapped stops for this day — add stops with locations on the
+            itinerary and they appear here.
           </p>
         )}
       </div>
 
-      {/* A small legend so the map explains itself. */}
+      {/* A small how-to so the map explains itself. */}
       <p className="mt-3 text-center text-[11px] text-ink-faint">
-        H = your hotel · numbered pins follow the day&apos;s order · N points
-        north
+        Two fingers to move, pinch to zoom, twist to rotate · tap the compass
+        to face north again
       </p>
     </div>
   );

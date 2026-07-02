@@ -162,3 +162,47 @@
     display: none;
   }
 }
+
+/*
+  ---------------------------------------------------------------------------
+  5. MAP PIN STYLES
+  ---------------------------------------------------------------------------
+  The pins that sit on the interactive map. These are plain HTML buttons
+  overlaid on the map by MapLibre, so they are styled here rather than
+  with Tailwind classes (MapLibre creates them outside React).
+*/
+.map-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  background: #c87941;
+  color: #0f0f0f;
+  font-weight: 700;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  border: 2px solid #0f0f0f;
+  cursor: pointer;
+  transition: outline-color 0.15s ease;
+  outline: 3px solid transparent;
+}
+
+.map-pin--hotel {
+  background: #0f0f0f;
+  color: #f0ede6;
+  border-color: #f0ede6;
+}
+
+/* The amber ring around whichever pin is currently selected. */
+.map-pin--selected {
+  outline-color: rgba(200, 121, 65, 0.6);
+}
+
+/* Make MapLibre's "use two fingers" hint match the dark theme. */
+.maplibregl-cooperative-gesture-screen {
+  background: rgba(15, 15, 15, 0.7);
+  color: #f0ede6;
+  font-size: 13px;
+}
